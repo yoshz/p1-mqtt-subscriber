@@ -1,0 +1,19 @@
+volumes:
+  timescaledb:
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    volumes:
+    - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+    - 1883:1883
+
+  timescaledb:
+    image: timescale/timescaledb:2.8.0-pg14
+    volumes:
+      - timescaledb:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
