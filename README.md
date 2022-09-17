@@ -1,6 +1,6 @@
 # P1-MQTT-Subscriber
 
-A small Go application that reads json messages from MQTT and saves them to TimescaleDB hypertable.
+A small Go application that reads P1 messages from MQTT and saves them to TimescaleDB hypertable.
 
 ## Local usage
 
@@ -39,7 +39,7 @@ cat example/message.json | docker compose exec mosquitto mosquitto_pub -h mosqui
 
 ## Environment variables
 
- * `DATABASE_URL`: url of the timescaledb databse (default is "postgres://metrics:metrics@localhost/metrics?sslmode=disable")
+ * `DATABASE_URL`: url of the timescaledb database (default is "postgres://metrics:metrics@localhost/metrics?sslmode=disable")
  * `MQTT_BROKER`: url of the MQTT broker (default is "tcp://localhost:1883")
  * `MQTT_USERNAME`: Username to authenticate to MQTT broker
  * `MQTT_PASSWORD`: Password to authenticate to MQTT broker
