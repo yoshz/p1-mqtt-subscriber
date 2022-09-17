@@ -9,6 +9,6 @@ FROM energy_meter
 GROUP BY day;
 
 SELECT add_continuous_aggregate_policy('energy_usage_daily',
-    start_offset => INTERVAL '3 days',
+    start_offset => INTERVAL '1 week',
     end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '1 days');
+    schedule_interval => INTERVAL '1 hour');
