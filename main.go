@@ -3,13 +3,12 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"os"
 	"time"
 
-	_ "github.com/lib/pq"
-
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -32,13 +31,13 @@ type EnergyMeterMessage struct {
 }
 
 var messagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
-	log.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	log.Debugf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
 
 	var err error
 	var message EnergyMeterMessage
 	err = json.Unmarshal(msg.Payload(), &message)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	_, err = db.Exec(
@@ -50,21 +49,23 @@ var messagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 		message.GasMeter,
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 }
 
 func main() {
+	log.SetFormatter(&log.JSONFormatter{})
+
 	var err error
 
 	db, err = sql.Open("postgres", databaseUrl)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	log.Println("Connected to postgres")
 
@@ -77,8 +78,9 @@ func main() {
 	if mqttPassword != "" {
 		opts.SetPassword(mqttPassword)
 	}
+	opts.CleanSession = false
 	opts.OnConnect = func(client MQTT.Client) {
-		if token := client.Subscribe(mqttTopic, 0, messagePubHandler); token.Wait() && token.Error() != nil {
+		if token := client.Subscribe(mqttTopic, 1, messagePubHandler); token.Wait() && token.Error() != nil {
 			log.Fatal(token.Error())
 		}
 		log.Printf("Subscribed to topic %s", mqttTopic)
@@ -86,7 +88,7 @@ func main() {
 
 	client := MQTT.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		log.Fatal(token.Error())
+		log.Fatalln(token.Error())
 	}
 
 	for {
